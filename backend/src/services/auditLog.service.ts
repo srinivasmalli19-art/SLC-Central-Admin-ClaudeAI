@@ -12,6 +12,12 @@ export const AuditAction = {
   APPLICATION_CREATED: "APPLICATION_CREATED",
   APPLICATION_UPDATED: "APPLICATION_UPDATED",
   APPLICATION_DELETED: "APPLICATION_DELETED",
+  // Generic across every integration adapter (Pasumithra, and future
+  // JeevaMitra/NearSip/etc. adapters reuse these same two actions) — the
+  // specific app is identified in metadata.applicationSlug, not the action
+  // name, so adding a new adapter never means adding a new audit action.
+  INTEGRATION_HEALTH_CHECKED: "INTEGRATION_HEALTH_CHECKED",
+  INTEGRATION_DATA_ACCESSED: "INTEGRATION_DATA_ACCESSED",
 } as const;
 
 export type AuditActionType = (typeof AuditAction)[keyof typeof AuditAction];

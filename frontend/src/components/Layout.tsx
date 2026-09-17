@@ -4,6 +4,12 @@ import { useAuth } from "../context/AuthContext";
 const NAV_ITEMS = [
   { to: "/", label: "Dashboard", superAdminOnly: false },
   { to: "/applications", label: "Applications", superAdminOnly: false },
+  // Gated the same way as "Admin Users": only SUPER_ADMIN has the
+  // pasumithra:read permission by default (see docs/PASUMITHRA-ADAPTER.md
+  // "RBAC"). This is a simplification — it reflects today's actual grants,
+  // not a real per-permission nav check, since the frontend doesn't yet
+  // fetch the current admin's full permission list (a Phase 1 gap, not new).
+  { to: "/pasumithra", label: "Pasumithra", superAdminOnly: true },
   { to: "/admin-users", label: "Admin Users", superAdminOnly: true },
   { to: "/audit-logs", label: "Audit Logs", superAdminOnly: false },
   { to: "/settings", label: "Settings", superAdminOnly: false },

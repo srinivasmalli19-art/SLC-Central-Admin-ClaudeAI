@@ -61,3 +61,64 @@ export interface DashboardSummary {
   recentAuditActivity: AuditLogEntry[];
   applicationHealth: { monitored: boolean; reason: string };
 }
+
+// --- Pasumithra integration (Phase 4, read-only) ---
+
+export type IntegrationHealthStatus = "healthy" | "unavailable" | "configuration_error" | "auth_error";
+
+export interface IntegrationHealth {
+  status: IntegrationHealthStatus;
+  responseTimeMs?: number;
+  lastCheckedAt: string;
+  errorMessage?: string;
+}
+
+export interface PasumithraAdmin {
+  id: string;
+  email: string | null;
+  name: string | null;
+  role: string | null;
+  createdAt: string | null;
+}
+
+export interface PasumithraUserSummary {
+  id: string;
+  name: string | null;
+  phone: string | null;
+  isBlocked: boolean;
+  sellerVerified: boolean;
+  joinedAt: string | null;
+}
+
+export interface PasumithraListingSummary {
+  id: string;
+  title: string | null;
+  category: string | null;
+  breed: string | null;
+  district: string | null;
+  price: number | null;
+  status: string | null;
+  sellerName: string | null;
+  postedAt: string | null;
+}
+
+export interface PasumithraDashboardSummary {
+  totalUsers: number;
+  activeUsers: number;
+  verifiedSellers: number;
+  totalListings: number;
+  activeListings: number;
+  soldListings: number;
+  totalHealthRecords: number;
+  pendingReports: number;
+  newListingsToday: number;
+  upcomingVaccinations: number;
+  upcomingDeworming: number;
+  pregnantAnimals: number;
+  upcomingCalving: number;
+  reportedListings: number;
+  reportedSellers: number;
+  pendingVerifications: number;
+  listingsByCategory: Array<{ name: string; value: number }>;
+  listingsByDistrict: Array<{ name: string; value: number }>;
+}

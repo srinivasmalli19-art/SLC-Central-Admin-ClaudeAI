@@ -1,19 +1,48 @@
 // Seeds the fixed permission catalogue, the two system roles
-// (SUPER_ADMIN / ADMIN), and — only if no admin users exist yet — one
-// bootstrap Super Admin account from SEED_SUPER_ADMIN_* env vars.
+// (SUPER_ADMIN / ADMIN), the Pasumithra application-registry entry, and —
+// only if no admin users exist yet — one bootstrap Super Admin account from
+// SEED_SUPER_ADMIN_* env vars.
 //
-// Safe to re-run: permissions/roles are upserted, and the bootstrap admin is
-// only ever created once (mirrors the one-time "/setup" pattern already used
-// by Pasumithra's admin-portal for its first admin — see
-// docs/APPLICATION-INVENTORY.md).
+// Safe to re-run: permissions/roles/the registry entry are upserted, and the
+// bootstrap admin is only ever created once (mirrors the one-time "/setup"
+// pattern already used by Pasumithra's admin-portal for its first admin —
+// see docs/APPLICATION-INVENTORY.md).
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { prisma } from "../src/config/prisma.js";
 import { ensureSystemRolesAndPermissions } from "../src/services/rbacSeed.service.js";
 
+async function seedPasumithraApplication() {
+  const existing = await prisma.application.findUnique({ where: { slug: "pasumithra" } });
+  if (existing) {
+    console.log("Pasumithra application registry entry already exists — leaving it as-is.");
+    return;
+  }
+
+  await prisma.application.create({
+    data: {
+      name: "Pasumithra",
+      slug: "pasumithra",
+      description: "Livestock buy/sell marketplace — web app, admin-portal, and Capacitor mobile shell on one Firebase project.",
+      platform: "React/Vite + Firebase (Firestore)",
+      environment: "production",
+      status: "ACTIVE",
+      repositoryRef: "pasumithra-Web-application",
+      frontendUrl: "https://pasumitra.com",
+      backendUrl: null,
+      integrationType: "adapter:pasumithra",
+      enabled: true,
+    },
+  });
+  console.log("Created Pasumithra application registry entry.");
+}
+
 async function main() {
   console.log("Seeding permissions and system roles...");
   const { superAdminRole } = await ensureSystemRolesAndPermissions();
+
+  console.log("Seeding application registry entries...");
+  await seedPasumithraApplication();
 
   const existingAdminCount = await prisma.adminUser.count();
   if (existingAdminCount > 0) {

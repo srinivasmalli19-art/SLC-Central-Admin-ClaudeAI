@@ -1,0 +1,15 @@
+// EMULATOR-ONLY test fixture rules. NOT Pasumithra's real security rules
+// (those live in the Pasumithra repo and are never touched from here — see
+// docs/PASUMITHRA-ADAPTER.md). The Central Admin adapter under test always
+// connects via the Firebase Admin SDK, which bypasses security rules
+// entirely, so these rules are never actually evaluated by the adapter
+// tests — this file exists only because `firebase emulators:start` requires
+// a rules file to be configured.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

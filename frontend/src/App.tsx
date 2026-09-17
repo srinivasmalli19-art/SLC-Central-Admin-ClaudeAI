@@ -8,6 +8,7 @@ import { AuditLogsPage } from "./pages/AuditLogsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { PasumithraPage } from "./pages/PasumithraPage";
 import { SettingsPage } from "./pages/SettingsPage";
 
 export function App() {
@@ -21,6 +22,7 @@ export function App() {
             <Route element={<Layout />}>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/applications" element={<ApplicationsPage />} />
+              <Route path="/pasumithra" element={<PasumithraPage />} />
               <Route path="/admin-users" element={<AdminUsersPage />} />
               <Route path="/audit-logs" element={<AuditLogsPage />} />
               <Route path="/settings" element={<SettingsPage />} />

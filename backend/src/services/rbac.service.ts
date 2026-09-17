@@ -10,6 +10,7 @@ export const PERMISSIONS = {
   APPLICATIONS_MANAGE: "applications:manage",
   AUDIT_LOGS_READ: "audit_logs:read",
   DASHBOARD_READ: "dashboard:read",
+  PASUMITHRA_READ: "pasumithra:read",
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

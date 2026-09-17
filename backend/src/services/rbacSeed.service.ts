@@ -10,6 +10,11 @@ export const PERMISSION_CATALOGUE = [
   { key: "applications:manage", description: "Create/update/delete application registry entries" },
   { key: "audit_logs:read", description: "View the audit log" },
   { key: "dashboard:read", description: "View the dashboard" },
+  // Dedicated, app-specific read permission (Phase 4) — deliberately NOT in
+  // ADMIN_DEFAULT_PERMISSIONS below, so granting Pasumithra visibility is a
+  // conscious Super Admin action per admin user, not an automatic blanket
+  // grant to every ADMIN. See docs/PASUMITHRA-ADAPTER.md "RBAC".
+  { key: "pasumithra:read", description: "View read-only Pasumithra integration data (dashboard, users, listings, admins)" },
 ];
 
 // SUPER_ADMIN gets implicit access to everything in code (rbac.service.ts) —
