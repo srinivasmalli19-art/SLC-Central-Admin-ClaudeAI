@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Env / secrets — never commit real credentials
+.env
+.env.local
+.env.*.local
+!.env.example
+!*/.env.example
+
+# Build output
+dist/
+build/
+*/dist/
+*/build/
+
+# Prisma
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+*/coverage/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Misc
+*.tsbuildinfo

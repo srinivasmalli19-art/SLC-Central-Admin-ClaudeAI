@@ -1,0 +1,124 @@
+// SLC Central Admin — Phase 1 schema.
+// This database holds ONLY Central Admin platform data (staff accounts, RBAC,
+// the application registry, and audit logs). It must never hold any
+// integrated application's business data (users, listings, bookings, etc.) —
+// see docs/ARCHITECTURE.md.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  roleId       String
+  role         Role     @relation(fields: [roleId], references: [id])
+  isActive     Boolean  @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs AuditLog[]
+
+  @@map("admin_users")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique // e.g. SUPER_ADMIN, ADMIN
+  description String?
+  isSystem    Boolean  @default(false) // seeded roles — protected from deletion
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  adminUsers  AdminUser[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  key         String   @unique // e.g. "applications:read", "admin_users:manage"
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+enum ApplicationStatus {
+  ACTIVE
+  DISABLED
+  MAINTENANCE
+  PLANNED
+}
+
+model Application {
+  id              String            @id @default(uuid())
+  name            String
+  slug            String            @unique
+  description     String?
+  platform        String? // e.g. "Flutter", "React/Vite", "Next.js"
+  environment     String? // e.g. "production", "staging", "development"
+  status          ApplicationStatus @default(PLANNED)
+  repositoryRef   String? // informational only — e.g. GitHub repo name/URL
+  frontendUrl     String?
+  backendUrl      String?
+  integrationType String? // e.g. "none", "planned", "adapter:pasumithra" — no live adapter wired in Phase 1
+  enabled         Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  healthChecks HealthCheck[]
+
+  @@map("applications")
+}
+
+// Foundation for future adapter health checks (Phase 4+). Phase 1 does not
+// write real rows here for any registered application — only the Central
+// Admin's own /health endpoint is live. See docs/ROADMAP.md Phase 7.
+model HealthCheck {
+  id             String      @id @default(uuid())
+  applicationId  String
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status         String // "up" | "down" | "unknown"
+  responseTimeMs Int?
+  errorMessage   String?
+  checkedAt      DateTime    @default(now())
+
+  @@map("health_checks")
+}
+
+model AuditLog {
+  id         String    @id @default(uuid())
+  actorId    String?
+  actor      AdminUser? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorEmail String? // denormalized snapshot, survives actor deletion
+  action     String // e.g. "LOGIN", "ADMIN_USER_CREATED", "ROLE_CHANGED", "APPLICATION_UPDATED"
+  targetType String? // e.g. "AdminUser", "Application", "Role"
+  targetId   String?
+  metadata   Json? // structured detail — NEVER passwords, tokens, or secrets
+  ipAddress  String?
+  createdAt  DateTime  @default(now())
+
+  @@map("audit_logs")
+}
