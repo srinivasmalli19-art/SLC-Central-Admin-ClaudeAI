@@ -48,4 +48,35 @@ describe("classifyFirestoreError", () => {
     const result = classifyFirestoreError({ code: 7, message: "secret-looking-internal-detail" });
     expect(result.message).not.toContain("secret-looking-internal-detail");
   });
+
+  it("classifies a missing Application Default Credentials setup as configuration_error, not auth_error", () => {
+    const result = classifyFirestoreError(
+      new Error(
+        "Could not load the default credentials. Browse to https://cloud.google.com/docs/authentication/getting-started for more information.",
+      ),
+    );
+    expect(result.status).toBe("configuration_error");
+  });
+
+  it("classifies an undetectable ADC project id error as configuration_error", () => {
+    const result = classifyFirestoreError(new Error("Unable to detect a Project Id in the current environment."));
+    expect(result.status).toBe("configuration_error");
+  });
+});
+
+describe("classifyFirestoreError — never leaks credential material", () => {
+  it("never includes a private-key-shaped value in its returned message, even if the raw error contained one", () => {
+    const fakeSecret = "-----BEGIN PRIVATE KEY-----FAKE_TEST_VALUE_NOT_REAL-----END PRIVATE KEY-----";
+    const result = classifyFirestoreError(
+      new Error(`invalid_grant: bad key: ${fakeSecret}`),
+    );
+    expect(result.message).not.toContain(fakeSecret);
+    expect(result.message).not.toContain("FAKE_TEST_VALUE_NOT_REAL");
+  });
+
+  it("never includes an env-var-looking secret value in its returned message", () => {
+    const fakeSecret = "sk_super_secret_test_token_value_12345";
+    const result = classifyFirestoreError(new Error(`permission-denied for token ${fakeSecret}`));
+    expect(result.message).not.toContain(fakeSecret);
+  });
 });

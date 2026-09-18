@@ -9,6 +9,20 @@ node_modules/
 !.env.example
 !*/.env.example
 
+# Defensive: never commit a service-account key or private key file by name,
+# regardless of where it's dropped in the tree (e.g. a downloaded Firebase
+# service-account JSON for the Pasumithra adapter — see
+# docs/PASUMITHRA-ADAPTER.md). The adapter only ever reads credentials from
+# environment variables, never from a file in this repo, so nothing should
+# ever legitimately match these patterns.
+*serviceAccount*.json
+*service-account*.json
+*-key.json
+*.pem
+*.p12
+*.jks
+*credentials*.json
+
 # Build output
 dist/
 build/

@@ -1,4 +1,4 @@
-import { cert, deleteApp, getApps, initializeApp, type App } from "firebase-admin/app";
+import { applicationDefault, cert, deleteApp, getApps, initializeApp, type App } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { loadPasumithraConfig } from "./config.js";
 
@@ -27,8 +27,20 @@ function getOrCreateApp(): App {
 
   const { config } = result;
 
-  if (config.usingEmulator) {
+  if (config.mode === "emulator") {
     return initializeApp({ projectId: config.projectId }, APP_NAME);
+  }
+
+  if (config.mode === "adc") {
+    // No private key of any kind is read here. applicationDefault() defers
+    // to the standard Google Auth Library resolution order: a gcloud user
+    // login (`gcloud auth application-default login`) locally, an attached
+    // service-account identity when running on GCP (Cloud Run/GCE/Cloud
+    // Functions — no key file involved), or a Workload Identity Federation
+    // config file when GOOGLE_APPLICATION_CREDENTIALS points at one (for
+    // production outside GCP, e.g. Render) — see docs/PASUMITHRA-ADAPTER.md
+    // "Credential architecture".
+    return initializeApp({ credential: applicationDefault(), projectId: config.projectId }, APP_NAME);
   }
 
   return initializeApp(

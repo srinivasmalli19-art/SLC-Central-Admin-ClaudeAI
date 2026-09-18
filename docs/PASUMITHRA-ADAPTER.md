@@ -145,15 +145,58 @@ statistics) needs a per-record detail view, and the shared `AppAdapter` interfac
 optional — adding it now with no caller would be exactly the "unnecessary endpoint" your
 instructions ask to avoid. Trivial to add later if a detail view is wanted.
 
+## Credential architecture (Phase 4A)
+
+The Pasumithra Google Cloud project enforces the org policy `iam.disableServiceAccountKeyCreation`
+— no downloadable service-account JSON key exists or is used anywhere in this integration.
+`config.ts` selects one of three mutually exclusive modes, chosen **explicitly** via
+`PASUMITHRA_FIREBASE_AUTH_MODE` — never guessed or silently fallen back between, so a
+misconfiguration always surfaces as `configuration_error`, not a confusing `auth_error`:
+
+- **`emulator`** — `FIRESTORE_EMULATOR_HOST` is set; only a project id is needed (checked first,
+  independent of `AUTH_MODE`, so every emulator test is unaffected by this change).
+- **`adc`** (recommended, and the only mode usable in a project with the key-creation policy
+  above) — Google Application Default Credentials, via `firebase-admin/app`'s
+  `applicationDefault()`. This one function call transparently covers three distinct deployment
+  shapes through the standard Google Auth Library resolution order, with **no code branching
+  needed per environment**:
+  1. **Local dev**: `gcloud auth application-default login` — ideally
+     **impersonating the existing least-privilege service account**
+     (`gcloud auth application-default login --impersonate-service-account=<email>`) rather than
+     granting the developer's own Google account a separate Firestore-level IAM grant. Requires
+     only `roles/iam.serviceAccountTokenCreator` on that one service account for the developer's
+     account — not a new `datastore.viewer` grant, and not touching the service account's
+     existing role at all.
+  2. **Production on Google Cloud** (Cloud Run/GCE/Cloud Functions): attach the same service
+     account to the compute resource directly — no key, no extra code, no extra config.
+  3. **Production outside Google Cloud** (e.g. Render): point `GOOGLE_APPLICATION_CREDENTIALS` at
+     a Workload Identity Federation credential-configuration file. That file describes *how* to
+     fetch a short-lived federated token — it contains no secret material itself, so it's safe to
+     hold as a normal deployment config value rather than a secret. Setting this up (creating the
+     WIF pool/provider on the Google Cloud side) is a future deployment step, not something this
+     phase implements — `applicationDefault()` already supports it with zero additional code once
+     that provider exists.
+- **`service_account`** — the original `PASUMITHRA_FIREBASE_CLIENT_EMAIL` /
+  `PASUMITHRA_FIREBASE_PRIVATE_KEY` env vars, kept as a supported fallback (not removed) for any
+  environment where the key-creation policy doesn't apply. Not usable against this specific
+  project today.
+
+A distinct Google Auth Library error — "Could not load the default credentials" — is classified
+as `configuration_error` (local ADC simply never set up), not `auth_error` (a real credential
+that was rejected) — see `errorClassification.ts`.
+
 ## Health check design
 
 `AppAdapter.HealthStatus.status` was widened from the Phase 1 placeholder (`"up"|"down"|"unknown"`)
 to a generic, reusable four-value union — useful for *any* future adapter, not Pasumithra-specific:
 
 - **`healthy`** — a real Firestore read against the configured project succeeded.
-- **`configuration_error`** — required env vars (`PASUMITHRA_FIREBASE_PROJECT_ID`,
-  `PASUMITHRA_FIREBASE_CLIENT_EMAIL`, `PASUMITHRA_FIREBASE_PRIVATE_KEY`) are missing or malformed.
-  Detected *before* any network call — never attempts a request with known-bad config.
+- **`configuration_error`** — required env vars are missing/malformed (`PASUMITHRA_FIREBASE_PROJECT_ID`
+  always; `PASUMITHRA_FIREBASE_AUTH_MODE` plus, in `service_account` mode, `_CLIENT_EMAIL`/
+  `_PRIVATE_KEY`), or Application Default Credentials were never set up locally in `adc` mode.
+  The env-var case is detected *before* any network call; the ADC-not-found case is detected by
+  classifying Google Auth Library's own distinct error for it (see "Credential architecture"
+  above) — either way, never attempts to report `healthy` on known-bad config.
 - **`auth_error`** — the credential was rejected by Google (invalid/expired service account,
   insufficient IAM). Detected by classifying the Firestore/Firebase error's code/message
   (`permission-denied`, `unauthenticated`, `invalid_grant`, `app/invalid-credential`, etc.).
