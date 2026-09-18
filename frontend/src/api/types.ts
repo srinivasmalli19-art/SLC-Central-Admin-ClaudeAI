@@ -122,3 +122,49 @@ export interface PasumithraDashboardSummary {
   listingsByCategory: Array<{ name: string; value: number }>;
   listingsByDistrict: Array<{ name: string; value: number }>;
 }
+
+// --- JeevaMitra integration (Phase 5B/5C, read-only) ---
+// IntegrationHealth (above) is shared/generic across every integration
+// adapter — reused as-is here, not duplicated.
+
+export interface JeevaMitraUserSummary {
+  id: string;
+  name: string | null;
+  role: string | null;
+  district: string | null;
+  isVerified: boolean;
+  createdAt: string | null;
+}
+
+export interface JeevaMitraDiseaseAlert {
+  id: string;
+  disease: string | null;
+  affectedSpecies: string | null;
+  severity: string | null;
+  district: string | null;
+  isActive: boolean;
+  issuedAt: string | null;
+}
+
+export interface JeevaMitraDashboardSummary {
+  usersByRole: {
+    farmer: number;
+    shepherd: number;
+  };
+  totalFarms: number;
+  activeFarms: number;
+  bookingsByStatus: {
+    pending: number;
+    confirmed: number;
+    active: number;
+    completed: number;
+    cancelled: number;
+  };
+  activeDiseaseAlertsBySeverity: {
+    low: number;
+    medium: number;
+    high: number;
+    critical: number;
+  };
+  activeDiseaseAlertsByDistrict: Array<{ name: string; value: number }>;
+}

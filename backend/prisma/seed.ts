@@ -1,7 +1,7 @@
 // Seeds the fixed permission catalogue, the two system roles
-// (SUPER_ADMIN / ADMIN), the Pasumithra application-registry entry, and —
-// only if no admin users exist yet — one bootstrap Super Admin account from
-// SEED_SUPER_ADMIN_* env vars.
+// (SUPER_ADMIN / ADMIN), the Pasumithra and JeevaMitra application-registry
+// entries, and — only if no admin users exist yet — one bootstrap Super
+// Admin account from SEED_SUPER_ADMIN_* env vars.
 //
 // Safe to re-run: permissions/roles/the registry entry are upserted, and the
 // bootstrap admin is only ever created once (mirrors the one-time "/setup"
@@ -37,12 +37,44 @@ async function seedPasumithraApplication() {
   console.log("Created Pasumithra application registry entry.");
 }
 
+// Metadata sourced only from the Phase 5A discovery report already in this
+// repo's conversation history and docs/JEEVAMITRA-ADAPTER.md — no URL,
+// environment, owner, or deployment detail here is invented. JeevaMitra is
+// a Flutter mobile app with no public web frontend URL to record (unlike
+// Pasumithra), so frontendUrl/backendUrl are left null rather than guessed.
+async function seedJeevaMitraApplication() {
+  const existing = await prisma.application.findUnique({ where: { slug: "jeevamitra" } });
+  if (existing) {
+    console.log("JeevaMitra application registry entry already exists — leaving it as-is.");
+    return;
+  }
+
+  await prisma.application.create({
+    data: {
+      name: "JeevaMitra",
+      slug: "jeevamitra",
+      description:
+        "Rural geo-spatial livestock and farm management platform for farmers and shepherds — land/fodder bookings, a vet directory, and community disease alerts.",
+      platform: "Flutter (Android/iOS/Web/macOS/Windows) + Firebase (Firestore)",
+      environment: "production",
+      status: "ACTIVE",
+      repositoryRef: "Jeevamitra",
+      frontendUrl: null,
+      backendUrl: null,
+      integrationType: "adapter:jeevamitra",
+      enabled: true,
+    },
+  });
+  console.log("Created JeevaMitra application registry entry.");
+}
+
 async function main() {
   console.log("Seeding permissions and system roles...");
   const { superAdminRole } = await ensureSystemRolesAndPermissions();
 
   console.log("Seeding application registry entries...");
   await seedPasumithraApplication();
+  await seedJeevaMitraApplication();
 
   const existingAdminCount = await prisma.adminUser.count();
   if (existingAdminCount > 0) {

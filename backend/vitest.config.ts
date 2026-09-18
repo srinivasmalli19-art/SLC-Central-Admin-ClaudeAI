@@ -18,6 +18,29 @@ export default defineConfig({
       JWT_EXPIRES_IN: "1h",
       CORS_ORIGIN: "http://localhost:5173",
       LOG_LEVEL: "silent",
+      // Explicitly force-unset every integration-adapter credential var,
+      // regardless of what a developer's local .env happens to have set
+      // for real local-dev use (e.g. after live ADC validation) — the main
+      // suite must be deterministic and never depend on live GCP
+      // credentials. Without this, dotenv's normal loading of the real
+      // .env file would leak whatever is actually configured there into
+      // these "no credentials configured" tests. See
+      // tests/pasumithra.routes.test.ts / tests/jeevamitra.routes.test.ts.
+      //
+      // FIRESTORE_EMULATOR_HOST is the one exception: preserve it if
+      // already set (e.g. by `firebase emulators:exec`, which exports it
+      // into this process before vitest even starts, for the separate
+      // test:pasumithra:emulator / test:jeevamitra:emulator scripts) —
+      // only default it to unset when nothing set it.
+      FIRESTORE_EMULATOR_HOST: process.env.FIRESTORE_EMULATOR_HOST ?? "",
+      PASUMITHRA_FIREBASE_PROJECT_ID: "",
+      PASUMITHRA_FIREBASE_AUTH_MODE: "",
+      PASUMITHRA_FIREBASE_CLIENT_EMAIL: "",
+      PASUMITHRA_FIREBASE_PRIVATE_KEY: "",
+      JEEVAMITRA_FIREBASE_PROJECT_ID: "",
+      JEEVAMITRA_FIREBASE_AUTH_MODE: "",
+      JEEVAMITRA_FIREBASE_CLIENT_EMAIL: "",
+      JEEVAMITRA_FIREBASE_PRIVATE_KEY: "",
     },
   },
 });

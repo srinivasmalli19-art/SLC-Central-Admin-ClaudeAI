@@ -11,6 +11,7 @@ export const PERMISSIONS = {
   AUDIT_LOGS_READ: "audit_logs:read",
   DASHBOARD_READ: "dashboard:read",
   PASUMITHRA_READ: "pasumithra:read",
+  JEEVAMITRA_READ: "jeevamitra:read",
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

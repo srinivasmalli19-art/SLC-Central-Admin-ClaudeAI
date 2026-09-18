@@ -6,6 +6,7 @@ import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { ApplicationsPage } from "./pages/ApplicationsPage";
 import { AuditLogsPage } from "./pages/AuditLogsPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { JeevaMitraPage } from "./pages/JeevaMitraPage";
 import { LoginPage } from "./pages/LoginPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PasumithraPage } from "./pages/PasumithraPage";
@@ -23,6 +24,7 @@ export function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/applications" element={<ApplicationsPage />} />
               <Route path="/pasumithra" element={<PasumithraPage />} />
+              <Route path="/jeevamitra" element={<JeevaMitraPage />} />
               <Route path="/admin-users" element={<AdminUsersPage />} />
               <Route path="/audit-logs" element={<AuditLogsPage />} />
               <Route path="/settings" element={<SettingsPage />} />

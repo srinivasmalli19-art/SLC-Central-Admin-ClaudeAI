@@ -15,6 +15,9 @@ export const PERMISSION_CATALOGUE = [
   // conscious Super Admin action per admin user, not an automatic blanket
   // grant to every ADMIN. See docs/PASUMITHRA-ADAPTER.md "RBAC".
   { key: "pasumithra:read", description: "View read-only Pasumithra integration data (dashboard, users, listings, admins)" },
+  // Same rationale as pasumithra:read — deliberately NOT in
+  // ADMIN_DEFAULT_PERMISSIONS. See docs/JEEVAMITRA-ADAPTER.md "RBAC".
+  { key: "jeevamitra:read", description: "View read-only JeevaMitra integration data (dashboard, users, disease alerts)" },
 ];
 
 // SUPER_ADMIN gets implicit access to everything in code (rbac.service.ts) —

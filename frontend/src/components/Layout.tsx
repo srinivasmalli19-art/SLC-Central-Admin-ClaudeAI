@@ -10,6 +10,10 @@ const NAV_ITEMS = [
   // not a real per-permission nav check, since the frontend doesn't yet
   // fetch the current admin's full permission list (a Phase 1 gap, not new).
   { to: "/pasumithra", label: "Pasumithra", superAdminOnly: true },
+  // Same gating rationale as "Pasumithra" above: only SUPER_ADMIN has the
+  // jeevamitra:read permission by default (see docs/JEEVAMITRA-ADAPTER.md
+  // "RBAC").
+  { to: "/jeevamitra", label: "JeevaMitra", superAdminOnly: true },
   { to: "/admin-users", label: "Admin Users", superAdminOnly: true },
   { to: "/audit-logs", label: "Audit Logs", superAdminOnly: false },
   { to: "/settings", label: "Settings", superAdminOnly: false },
